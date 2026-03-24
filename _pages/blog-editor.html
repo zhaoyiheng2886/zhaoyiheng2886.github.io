@@ -66,11 +66,11 @@ author_profile: true
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Repository Settings
-    const GITHUB_REPO = "{{ site.repository }}"; // Usually "username/username.github.io"
-    const GITHUB_BRANCH = "master"; // Assume master, adjust if necessary (some use main)
+    /* Repository Settings */
+    const GITHUB_REPO = "{{ site.repository }}";
+    const GITHUB_BRANCH = "master";
 
-    // Initialize EasyMDE
+    /* Initialize EasyMDE */
     const easymde = new EasyMDE({
         element: document.getElementById('post-content'),
         spellChecker: false,
@@ -82,18 +82,18 @@ document.addEventListener('DOMContentLoaded', function() {
         placeholder: "Write your post content here using Markdown...\n\n## Example Heading\n- Point 1\n- Point 2"
     });
 
-    // Set today's date as default
+    /* Set today's date as default */
     const dateInput = document.getElementById('post-date');
     const today = new Date().toISOString().split('T')[0];
     dateInput.value = today;
 
-    // Token Management
+    /* Token Management */
     const tokenInput = document.getElementById('github-token');
     const saveTokenBtn = document.getElementById('save-token-btn');
     const clearTokenBtn = document.getElementById('clear-token-btn');
     const tokenStatus = document.getElementById('token-status');
 
-    // Load saved token
+    /* Load saved token */
     const savedToken = localStorage.getItem('github_pat');
     if (savedToken) {
         tokenInput.value = savedToken;
@@ -129,9 +129,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Generate Front Matter
+    /* Generate Front Matter */
     function generateFrontMatter(title, date, tags) {
-        // Create permalink slug from title
         const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
         const year = date.split('-')[0];
         const month = date.split('-')[1];
@@ -167,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const frontMatter = generateFrontMatter(title, date, tags);
         let finalContent = frontMatter + content;
         
-        // Remove trailing empty lines to keep it clean
+        /* Remove trailing empty lines to keep it clean */
         finalContent = finalContent.replace(/\n{3,}$/, '\n\n'); 
         
         return {
@@ -189,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
         statusEl.style.display = 'block';
     }
 
-    // Download Logic
+    /* Download Logic */
     document.getElementById('download-btn').addEventListener('click', function() {
         const postData = getFullContent();
         if (!postData) return;
@@ -207,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
         URL.revokeObjectURL(url);
     });
 
-    // Unicode string to Base64 (supports emojis/chinese characters)
+    /* Unicode string to Base64 */
     function b64EncodeUnicode(str) {
         return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
             function toSolidBytes(match, p1) {
@@ -215,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }));
     }
 
-    // Publish to GitHub Logic
+    /* Publish to GitHub Logic */
     document.getElementById('publish-btn').addEventListener('click', async function() {
         const token = tokenInput.value.trim() || localStorage.getItem('github_pat');
         if (!token) {
@@ -230,7 +229,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const filename = getFilename(postData.title, postData.date);
         const filePath = `_posts/${filename}`;
         
-        // Ensure GITHUB_REPO is valid
         if (!GITHUB_REPO) {
             showStatus("Error: GitHub repository not configured in _config.yml", "error");
             return;
@@ -242,7 +240,6 @@ document.addEventListener('DOMContentLoaded', function() {
         showStatus(`Preparing to publish ${filename} to ${GITHUB_REPO}...`, "info");
 
         try {
-            // Check if file already exists to get SHA (needed for updates, though unlikely for a new post)
             const getUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`;
             let sha = null;
             
@@ -260,7 +257,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`Failed to check existing file: ${getRes.statusText}`);
             }
 
-            // Create or update the file
             const bodyData = {
                 message: `Add blog post via built-in editor: ${postData.title}`,
                 content: b64EncodeUnicode(postData.content),
@@ -283,7 +279,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (putRes.ok) {
                 showStatus(`✅ Success! Posted as ${filename}. The site will rebuild shortly.`, "success");
-                // Clear the editor after a successful post (optional, maybe just clear easymde)
                 easymde.value('');
                 document.getElementById('post-title').value = '';
                 document.getElementById('post-tags').value = '';
