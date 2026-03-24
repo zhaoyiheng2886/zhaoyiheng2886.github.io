@@ -5,9 +5,9 @@ author_profile: true
 lang: cn
 ---
 
-你好！我是**赵以恒 (Zhao Yiheng)**，目前就读于[南洋理工大学](https://www.ntu.edu.sg/) (NTU)，攻读计算机控制与自动化方向理学硕士。本科毕业于[河海大学](https://www.hhu.edu.cn/)计算机科学与技术专业（GPA: 4.42/5.0）。我的研究兴趣包括 **AIGC**、**AI 安全** 和 **视觉语言模型 (VLM)**。
+我是**赵以恒 (Zhao Yiheng)**，目前就读于[南洋理工大学](https://www.ntu.edu.sg/) (NTU)，攻读计算机控制与自动化方向理学硕士。本科毕业于[河海大学](https://www.hhu.edu.cn/)计算机科学与技术专业。我的研究兴趣包括 **AIGC**、**AI 安全**。
 
-精通 Java、Python，熟悉 C 语言，熟练掌握关系型与图数据库。业余爱好健身、羽毛球、长跑、围棋 ♟️（业余5段）。
+目前在Prof Jiang Xudong的指导下进行对多模态大模型、智能体的鲁棒性以及对抗攻击研究。
 
 ---
 
