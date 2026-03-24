@@ -26,19 +26,19 @@ author:
   avatar           : "profile.png"
   name             : "Zhao Yiheng"
   pronouns         : # example: "she/her"  
-  bio              : "Researcher interested in Quantitative Trading and Machine Learning."
-  location         : "Earth"
-  employer         : "StockTradebyZ"
+  bio              : "M.Sc. Student at NTU · AIGC · AI Security"
+  location         : "Singapore"
+  employer         : "Nanyang Technological University"
   uri              : # URL
-  email            : "zhaoyiheng2886@gmail.com" 
+  email            : "yiheng007@e.ntu.edu.sg" 
 
   # Academic websites
   academia         : # URL
   arxiv            : # URL - Update with the correct link to your profile
-  googlescholar    : # "https://scholar.google.com/citations?user=PS_CX0AAAAAJ"
+  googlescholar    : # URL
   inspire-hep      : # URL
   impactstory      : # URL
-  orcid            : # "https://orcid.org/yourorcidurl"
+  orcid            : "https://orcid.org/0009-0003-3318-8572"
   semantic         : # URL
   ssrn             : # URL
   pubmed           : # "https://www.ncbi.nlm.nih.gov/pubmed/?term=john+snow"
