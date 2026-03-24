@@ -1,0 +1,305 @@
+---
+layout: single
+title: "Blog Editor"
+permalink: /blog-editor/
+author_profile: true
+---
+
+<!-- EasyMDE CSS and JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+
+<!-- Custom Editor CSS -->
+<link rel="stylesheet" href="{{ base_path }}/assets/css/blog-editor.css">
+
+<div class="editor-container">
+    <div class="editor-header">
+        <p>Write your new blog post below. You can download the `.md` file to commit it manually, or provide your GitHub Personal Access Token (PAT) below to publish it directly to your repository.</p>
+    </div>
+
+    <!-- GitHub Settings -->
+    <div class="github-settings-panel">
+        <h3>GitHub Publishing Settings (Optional)</h3>
+        <p>Your token is stored securely in your browser's local storage and is never sent anywhere except directly to the GitHub API.</p>
+        <div class="form-group">
+            <label for="github-token">GitHub Personal Access Token (repo scope required)</label>
+            <div class="token-input-group">
+                <input type="password" id="github-token" class="form-control" placeholder="ghp_xxxxxxxxxxxxxxxxx">
+                <button type="button" class="btn btn-secondary" id="save-token-btn">Save Token</button>
+                <button type="button" class="btn btn-secondary" id="clear-token-btn" style="display:none;">Clear Token</button>
+            </div>
+            <small id="token-status" style="color: green; display: none; margin-top: 5px;">Token saved in browser!</small>
+        </div>
+    </div>
+
+    <!-- Front Matter Form -->
+    <div class="form-group">
+        <label for="post-title">Post Title</label>
+        <input type="text" id="post-title" class="form-control" placeholder="e.g. My Awesome Research Update" required>
+    </div>
+
+    <div class="form-group half-width">
+        <label for="post-date">Publish Date</label>
+        <input type="date" id="post-date" class="form-control" required>
+    </div>
+
+    <div class="form-group half-width">
+        <label for="post-tags">Tags (comma separated)</label>
+        <input type="text" id="post-tags" class="form-control" placeholder="e.g. research, machine learning, update">
+    </div>
+
+    <!-- Markdown Editor -->
+    <div class="form-group" style="margin-top: 20px;">
+        <label for="post-content">Post Content (Markdown)</label>
+        <textarea id="post-content"></textarea>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <button type="button" id="download-btn" class="btn btn-secondary">⬇️ Download .md File</button>
+        <button type="button" id="publish-btn" class="btn btn-primary">🚀 Publish to GitHub</button>
+    </div>
+
+    <!-- Status Message -->
+    <div id="publish-status"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Repository Settings
+    const GITHUB_REPO = "{{ site.repository }}"; // Usually "username/username.github.io"
+    const GITHUB_BRANCH = "master"; // Assume master, adjust if necessary (some use main)
+
+    // Initialize EasyMDE
+    const easymde = new EasyMDE({
+        element: document.getElementById('post-content'),
+        spellChecker: false,
+        autosave: {
+            enabled: true,
+            uniqueId: "blog_editor_autosave",
+            delay: 1000,
+        },
+        placeholder: "Write your post content here using Markdown...\n\n## Example Heading\n- Point 1\n- Point 2"
+    });
+
+    // Set today's date as default
+    const dateInput = document.getElementById('post-date');
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.value = today;
+
+    // Token Management
+    const tokenInput = document.getElementById('github-token');
+    const saveTokenBtn = document.getElementById('save-token-btn');
+    const clearTokenBtn = document.getElementById('clear-token-btn');
+    const tokenStatus = document.getElementById('token-status');
+
+    // Load saved token
+    const savedToken = localStorage.getItem('github_pat');
+    if (savedToken) {
+        tokenInput.value = savedToken;
+        saveTokenBtn.style.display = 'none';
+        clearTokenBtn.style.display = 'inline-block';
+        tokenStatus.style.display = 'block';
+    }
+
+    saveTokenBtn.addEventListener('click', function() {
+        if (tokenInput.value.trim() !== '') {
+            localStorage.setItem('github_pat', tokenInput.value.trim());
+            saveTokenBtn.style.display = 'none';
+            clearTokenBtn.style.display = 'inline-block';
+            tokenStatus.style.display = 'block';
+            tokenStatus.innerText = "Token saved in browser!";
+            tokenStatus.style.color = "green";
+        }
+    });
+
+    clearTokenBtn.addEventListener('click', function() {
+        localStorage.removeItem('github_pat');
+        tokenInput.value = '';
+        saveTokenBtn.style.display = 'inline-block';
+        clearTokenBtn.style.display = 'none';
+        tokenStatus.style.display = 'none';
+    });
+
+    tokenInput.addEventListener('input', function() {
+        if (tokenInput.value !== localStorage.getItem('github_pat')) {
+            saveTokenBtn.style.display = 'inline-block';
+            clearTokenBtn.style.display = 'none';
+            tokenStatus.style.display = 'none';
+        }
+    });
+
+    // Generate Front Matter
+    function generateFrontMatter(title, date, tags) {
+        // Create permalink slug from title
+        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        const year = date.split('-')[0];
+        const month = date.split('-')[1];
+        const permalink = `/posts/${year}/${month}/${slug}/`;
+
+        let fm = "---\n";
+        fm += `title: '${title.replace(/'/g, "''")}'\n`;
+        fm += `date: ${date}\n`;
+        fm += `permalink: ${permalink}\n`;
+        
+        if (tags && tags.trim() !== '') {
+            fm += `tags:\n`;
+            const tagsList = tags.split(',').map(t => t.trim()).filter(t => t);
+            tagsList.forEach(t => {
+                fm += `  - ${t}\n`;
+            });
+        }
+        fm += "---\n\n";
+        return fm;
+    }
+
+    function getFullContent() {
+        const title = document.getElementById('post-title').value;
+        const date = document.getElementById('post-date').value;
+        const tags = document.getElementById('post-tags').value;
+        const content = easymde.value();
+
+        if (!title) {
+            alert("Please enter a Post Title.");
+            return null;
+        }
+
+        const frontMatter = generateFrontMatter(title, date, tags);
+        let finalContent = frontMatter + content;
+        
+        // Remove trailing empty lines to keep it clean
+        finalContent = finalContent.replace(/\n{3,}$/, '\n\n'); 
+        
+        return {
+            title: title,
+            date: date,
+            content: finalContent
+        };
+    }
+
+    function getFilename(title, date) {
+        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        return `${date}-${slug}.md`;
+    }
+
+    function showStatus(message, type) {
+        const statusEl = document.getElementById('publish-status');
+        statusEl.innerText = message;
+        statusEl.className = 'status-' + type;
+        statusEl.style.display = 'block';
+    }
+
+    // Download Logic
+    document.getElementById('download-btn').addEventListener('click', function() {
+        const postData = getFullContent();
+        if (!postData) return;
+
+        const filename = getFilename(postData.title, postData.date);
+        const blob = new Blob([postData.content], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    // Unicode string to Base64 (supports emojis/chinese characters)
+    function b64EncodeUnicode(str) {
+        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+            function toSolidBytes(match, p1) {
+                return String.fromCharCode('0x' + p1);
+            }));
+    }
+
+    // Publish to GitHub Logic
+    document.getElementById('publish-btn').addEventListener('click', async function() {
+        const token = tokenInput.value.trim() || localStorage.getItem('github_pat');
+        if (!token) {
+            alert("Please enter your GitHub Personal Access Token first.");
+            tokenInput.focus();
+            return;
+        }
+
+        const postData = getFullContent();
+        if (!postData) return;
+
+        const filename = getFilename(postData.title, postData.date);
+        const filePath = `_posts/${filename}`;
+        
+        // Ensure GITHUB_REPO is valid
+        if (!GITHUB_REPO) {
+            showStatus("Error: GitHub repository not configured in _config.yml", "error");
+            return;
+        }
+
+        const originalBtnText = this.innerHTML;
+        this.innerHTML = "⏳ Publishing...";
+        this.disabled = true;
+        showStatus(`Preparing to publish ${filename} to ${GITHUB_REPO}...`, "info");
+
+        try {
+            // Check if file already exists to get SHA (needed for updates, though unlikely for a new post)
+            const getUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`;
+            let sha = null;
+            
+            const getRes = await fetch(getUrl, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (getRes.ok) {
+                const getJson = await getRes.json();
+                sha = getJson.sha;
+            } else if (getRes.status !== 404) {
+                throw new Error(`Failed to check existing file: ${getRes.statusText}`);
+            }
+
+            // Create or update the file
+            const bodyData = {
+                message: `Add blog post via built-in editor: ${postData.title}`,
+                content: b64EncodeUnicode(postData.content),
+                branch: GITHUB_BRANCH
+            };
+            
+            if (sha) {
+                bodyData.sha = sha;
+            }
+
+            const putRes = await fetch(getUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(bodyData)
+            });
+
+            if (putRes.ok) {
+                showStatus(`✅ Success! Posted as ${filename}. The site will rebuild shortly.`, "success");
+                // Clear the editor after a successful post (optional, maybe just clear easymde)
+                easymde.value('');
+                document.getElementById('post-title').value = '';
+                document.getElementById('post-tags').value = '';
+                easymde.clearAutosavedValue();
+            } else {
+                const errorData = await putRes.json();
+                throw new Error(errorData.message || 'Unknown API error');
+            }
+
+        } catch (err) {
+            console.error(err);
+            showStatus(`❌ Error publishing: ${err.message}. Are your token and permissions correct?`, "error");
+        } finally {
+            this.innerHTML = originalBtnText;
+            this.disabled = false;
+        }
+    });
+});
+</script>
