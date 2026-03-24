@@ -26,4 +26,5 @@ latent主要压缩的就是perception的部分。（在训练的loss里加入了
 
 **cross attention怎么做(如Figure 3所示)：
 先把条件输入y编成一串表示，再在 U-Net 的中间特征上用 cross-attention，让图像 latent 特征作为 query，条件表示作为 key/value。**
+
 ![](/images/posts/image-2026-03-24-14-07-36-772Z.png)
