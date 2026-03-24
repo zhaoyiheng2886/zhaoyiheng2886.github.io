@@ -203,11 +203,13 @@
   }
 
   .visible-links {
-    display: table;
+    display: flex;
+    align-items: center;
+    width: 100%;
 
     li {
-      display: table-cell;
-      vertical-align: middle;
+      display: flex;
+      align-items: center;
 
       &:first-child {
         font-weight: bold;
@@ -225,12 +227,14 @@
       }
     }
 
-    #theme-toggle {
+    #lang-toggle {
       a {
-        width: 25px;
         display: flex;
-        justify-content: center;
+        align-items: center;
+        gap: 4px;
         cursor: pointer;
+        white-space: nowrap;
+        font-size: 0.85em;
       }
     }
 

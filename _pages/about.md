@@ -8,9 +8,17 @@ redirect_from:
   - /about.html
 ---
 
-Hi! I'm **Zhao Yiheng (赵以恒)**, a Master's student at [Nanyang Technological University](https://www.ntu.edu.sg/) (NTU), Singapore, majoring in Computer Control and Automation. I received my B.Eng. in Computer Science and Technology from [Hohai University](https://www.hhu.edu.cn/), Nanjing, China (GPA: 4.42/5.0).
+Hi! I'm **Zhao Yiheng (赵以恒)**, a Master's student at [Nanyang Technological University](https://www.ntu.edu.sg/) (NTU), Singapore, majoring in Computer Control and Automation. I received my B.Eng. in Computer Science and Technology from [Hohai University](https://www.hhu.edu.cn/), Nanjing, China (GPA: 4.42/5.0). My research interests include **AIGC**, **AI Security**, and **Vision-Language Models (VLMs)**.
 
-My research interests include **AIGC**, **AI Security**, and **Vision-Language Models (VLMs)**.
+I'm proficient in Java and Python, familiar with C, and experienced with relational & graph databases. Outside of work, I enjoy fitness, badminton, long-distance running, and Go ♟️ (Amateur 5 Dan).
+
+---
+
+## 📰 News
+
+- **[Mar. 2025]** 🔍 Actively looking for **AIGC / AI Security** internship opportunities!
+- **[2025]** Paper on VLM adversarial attacks submitted to **ACM MM 2026** (CCF-A).
+- **[2025]** Paper accepted by **Journal of Translational Medicine**.
 
 ---
 
@@ -22,14 +30,12 @@ My research interests include **AIGC**, **AI Security**, and **Vision-Language M
 
 ---
 
-## 🏆 Awards
+## 📖 Recent Blog Posts
 
-- **Academic Excellence Scholarship** (Top 20%), Hohai University — Oct. 2022, Oct. 2024
-- **Second Prize**, Hohai University "Water Week" Design Competition — Apr. 2022
+{% for post in site.posts limit:5 %}
+- **[{{ post.date | date: "%Y-%m-%d" }}]** [{{ post.title }}]({{ post.url }})
+{% endfor %}
 
----
-
-## 🎯 Skills & Interests
-
-- **Skills:** Proficient in Java, Python; Familiar with C; Relational & Graph Databases
-- **Interests:** Fitness, Badminton, Long-distance Running, Go ♟️ (Amateur 5 Dan)
+{% if site.posts.size == 0 %}
+_Coming soon — stay tuned! 🚧_
+{% endif %}
