@@ -74,6 +74,57 @@ document.addEventListener('DOMContentLoaded', function() {
     const easymde = new EasyMDE({
         element: document.getElementById('post-content'),
         spellChecker: false,
+        uploadImage: true,
+        imageUploadFunction: async function(file, onSuccess, onError) {
+            const token = tokenInput.value.trim() || localStorage.getItem('github_pat');
+            if (!token) {
+                onError("Please enter your GitHub PAT first to upload images.");
+                return;
+            }
+            if (!GITHUB_REPO) {
+                onError("GitHub repository not configured.");
+                return;
+            }
+
+            try {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async function() {
+                    const base64Data = reader.result.split(',')[1];
+                    const extension = file.name.split('.').pop() || 'png';
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T').join('-');
+                    const imageFilename = `image-${timestamp}.${extension}`;
+                    const filePath = `images/posts/${imageFilename}`; 
+                    const getUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`;
+
+                    const putRes = await fetch(getUrl, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: `Upload image: ${imageFilename}`,
+                            content: base64Data,
+                            branch: GITHUB_BRANCH
+                        })
+                    });
+
+                    if (putRes.ok) {
+                        onSuccess(`/${filePath}`);
+                    } else {
+                        const errorData = await putRes.json();
+                        onError(errorData.message || 'Error uploading image');
+                    }
+                };
+                reader.onerror = function() {
+                    onError("Failed to read image file.");
+                };
+            } catch (err) {
+                onError(err.message);
+            }
+        },
         autosave: {
             enabled: true,
             uniqueId: "blog_editor_autosave",
