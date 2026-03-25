@@ -1,7 +1,9 @@
 ---
 title: 'High-Resolution Image Synthesis with Latent Diffusion Models精读'
+collection: publications
+category: manuscripts
+permalink: /publication/2026-03-24-high-resolution-image-synthesis-with-latent-diffusion-models
 date: 2026-03-24
-permalink: /posts/2026/03/high-resolution-image-synthesis-with-latent-diffusion-models/
 ---
 
 核心观点很简单，

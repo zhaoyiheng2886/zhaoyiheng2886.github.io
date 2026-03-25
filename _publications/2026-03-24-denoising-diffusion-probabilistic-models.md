@@ -1,7 +1,9 @@
 ---
 title: 'Denoising Diffusion Probabilistic Models论文精读'
+collection: publications
+category: manuscripts
+permalink: /publication/2026-03-24-denoising-diffusion-probabilistic-models
 date: 2026-03-24
-permalink: /posts/2026/03/denoising-diffusion-probabilistic-models/
 ---
 
 
