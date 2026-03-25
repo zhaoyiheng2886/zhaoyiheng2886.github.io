@@ -3,7 +3,8 @@ title: 'Back to Basics: Let Denoising Generative Models Denoise精读'
 date: 2026-03-25
 permalink: /posts/2026/03/back-to-basics-let-denoising-generative-models-denoise/
 tags:
- - Diffusion Model， Transformer
+ - Diffusion Model
+ - Transformer
 ---
 
 首先了解一下**流形假设**（ In machine
