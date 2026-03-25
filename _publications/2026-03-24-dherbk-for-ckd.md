@@ -1,9 +1,7 @@
 ---
-title: "DHerbKB for CKD"
+title: "DHerbKB for CKD: knowledge base of diet and toxic herbal medicines for clinical support of chronic kidney disease"
 collection: publications
 category: manuscripts
 permalink: /publication/2026-03-24-dherbk-for-ckd
-date: 2026-03-24
+date: 2025
 ---
-
-This is the designated page for DHerbKB for CKD.
