@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /* Generate Front Matter */
     function generateFrontMatter(title, date, tags) {
-        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        const slug = title.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-').replace(/(^-|-$)+/g, '');
         const year = date.split('-')[0];
         const month = date.split('-')[1];
         const permalink = `/posts/${year}/${month}/${slug}/`;
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getFilename(title, date) {
-        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        const slug = title.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-').replace(/(^-|-$)+/g, '');
         return `${date}-${slug}.md`;
     }
 
