@@ -8,7 +8,7 @@ redirect_from:
   - /about.html
 ---
 
-Hi! I'm **Zhao Yiheng**, a Master's student at [Nanyang Technological University](https://www.ntu.edu.sg/) (NTU), Singapore, majoring in Computer Control and Automation. I received my B.Eng. in Computer Science and Technology from [Hohai University](https://www.hhu.edu.cn/), Nanjing, China. My research interests include **AIGC**, **AI Security**.
+Hi! I'm **Zhao Yiheng**, a Master's student at [Nanyang Technological University](https://www.ntu.edu.sg/) (NTU), Singapore, majoring in signal processing and machine learning. I received my B.Eng. in Computer Science and Technology from [Hohai University](https://www.hhu.edu.cn/), Nanjing, China. My research interests include **AIGC**, **AI Security**.
 
 Currently, I am working on robustness and adversarial attacks against multimodal large models and agents under the supervision of Prof. Jiang Xudong.
 
