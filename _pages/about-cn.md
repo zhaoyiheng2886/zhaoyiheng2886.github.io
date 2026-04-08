@@ -5,7 +5,7 @@ author_profile: true
 lang: cn
 ---
 
-我是**赵以恒 (Zhao Yiheng)**，目前就读于[南洋理工大学](https://www.ntu.edu.sg/) (NTU)，攻读信号处理与机器学习方向理学硕士。本科毕业于[河海大学](https://www.hhu.edu.cn/)计算机科学与技术专业。我的研究兴趣包括 **AIGC**、**AI 安全**。
+我是**赵以恒 (Zhao Yiheng)**，目前就读于[南洋理工大学](https://www.ntu.edu.sg/) (NTU)**电气与电子工程学院 (EE学院)**。本科毕业于[河海大学](https://www.hhu.edu.cn/)计算机科学与技术专业。我的研究兴趣包括 **AIGC**、**AI 安全**。
 
 目前在Prof Jiang Xudong的指导下进行对多模态大模型、智能体的鲁棒性以及对抗攻击研究。
 
