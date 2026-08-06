@@ -130,7 +130,7 @@ Create these scripts and dependency floors:
     "test": "vitest run"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.0.0",
+    "@astrojs/mdx": "^5.0.0",
     "@astrojs/rss": "^4.0.0",
     "@astrojs/sitemap": "^3.0.0",
     "@resvg/resvg-js": "^2.6.2",
