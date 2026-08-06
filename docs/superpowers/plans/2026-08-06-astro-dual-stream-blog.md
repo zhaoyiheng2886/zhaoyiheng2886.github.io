@@ -77,8 +77,7 @@ tests/schema.test.ts                     frontmatter validation
 tests/content.test.ts                    sorting, channel, tag, and timeline behavior
 tests/migration.test.ts                  migrated-count and legacy-path checks
 tests/editor.test.ts                     editor output behavior
-tests/design-contract.test.ts            design-token and copy constraints
-tests/routes.test.ts                     expected generated routes
+tests/build-output.test.ts               generated-route and rendered-HTML behavior
 scripts/verify-build.mjs                 production artifact assertions
 ```
 
@@ -90,6 +89,7 @@ scripts/verify-build.mjs                 production artifact assertions
 - Create: `tsconfig.json`
 - Create: `src/site.config.ts`
 - Create: `tests/scaffold.test.ts`
+- Modify: `.gitignore`
 
 **Interfaces:**
 - Produces: `siteConfig` with `title`, `description`, `url`, `author`, `email`, `github`, and `navigation`.
@@ -145,7 +145,8 @@ Create these scripts and dependency floors:
     "@astrojs/check": "^0.9.0",
     "gray-matter": "^4.0.3",
     "typescript": "^5.9.0",
-    "vitest": "^3.2.0"
+    "vitest": "^3.2.0",
+    "yaml": "^2.8.0"
   }
 }
 ```
@@ -176,6 +177,8 @@ export const siteConfig = {
 
 Configure Astro with `site: siteConfig.url`, MDX, sitemap, and Expressive Code. Use `astro check` and strict TypeScript.
 
+Remove the legacy `package-lock.json` ignore rule from `.gitignore` so the Astro dependency graph is committed and `npm ci` can reproduce the build.
+
 - [ ] **Step 4: Verify scaffold**
 
 Run `npm test -- tests/scaffold.test.ts && npm run check`.
@@ -185,7 +188,7 @@ Expected: 2 tests PASS and Astro type checking exits 0.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add package.json package-lock.json astro.config.ts tsconfig.json src/site.config.ts tests/scaffold.test.ts
+git add .gitignore package.json package-lock.json astro.config.ts tsconfig.json src/site.config.ts tests/scaffold.test.ts
 git commit -m "build: establish Astro project baseline"
 ```
 
@@ -433,41 +436,16 @@ git commit -m "feat: migrate Jekyll content into Astro collections"
 - Create: `src/components/SiteHeader.astro`
 - Create: `src/components/SiteFooter.astro`
 - Create: `src/components/Intro.astro`
-- Create: `tests/design-contract.test.ts`
 
 **Interfaces:**
 - Consumes: `siteConfig.navigation` and page-level `title`, `description`, and optional `image`.
 - Produces: the HTML shell, theme bootstrapping, shared header/footer, and approved intro copy.
 
-- [ ] **Step 1: Write the failing visual contract test**
+- [ ] **Step 1: Record the presentation-testing exception**
 
-```ts
-import { expect, it } from "vitest";
-import fs from "node:fs";
+CSS and static Astro markup are presentation/configuration work, so the user-approved testing strategy intentionally avoids source-string tests. Record in the task report that behavior will be verified by a real Astro build in Step 3 and by computed styles, rendered DOM, responsive layout, and visible copy in Task 10 browser QA.
 
-it("contains the approved tokens and excludes rejected decoration", () => {
-  const css = fs.readFileSync("src/styles/global.css", "utf8");
-  expect(css).toContain("--paper: #F4F5F2");
-  expect(css).toContain("--signal: #5877D8");
-  expect(css).toContain("--content-width: 45rem");
-  expect(css).not.toMatch(/linear-gradient|radial-gradient|backdrop-filter/);
-});
-
-it("keeps the approved intro free of profile info chips", () => {
-  const intro = fs.readFileSync("src/components/Intro.astro", "utf8");
-  expect(intro).toContain("Researching machines. Remembering a life.");
-  expect(intro).not.toContain("Singapore");
-  expect(intro).not.toContain("info-item");
-});
-```
-
-- [ ] **Step 2: Run the test and confirm missing-file failure**
-
-Run `npm test -- tests/design-contract.test.ts`.
-
-Expected: FAIL because the CSS and Intro component do not exist.
-
-- [ ] **Step 3: Implement the shared visual system**
+- [ ] **Step 2: Implement the shared visual system**
 
 Define the five approved tokens, serif body and monospace utility stacks, visible focus states, light/dark tokens, `prefers-reduced-motion`, responsive header wrapping, prose rhythm, code overflow, and a maximum reading width of `45rem`. `Intro.astro` contains only the approved three-line copy and no AIGC/AI Security/Singapore chip row.
 
@@ -504,16 +482,16 @@ pre { overflow-x: auto; }
 </section>
 ```
 
-- [ ] **Step 4: Verify shared UI**
+- [ ] **Step 3: Verify shared UI compiles and builds**
 
-Run `npm test -- tests/design-contract.test.ts && npm run check`.
+Run `npm run check && npm run build`.
 
-Expected: visual contract tests PASS and type checking exits 0.
+Expected: type checking and the Astro production build exit 0 with no warnings. Do not claim visual behavior is verified until Task 10 browser QA.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git add src/styles src/layouts/BaseLayout.astro src/components/SiteHeader.astro src/components/SiteFooter.astro src/components/Intro.astro tests/design-contract.test.ts
+git add src/styles src/layouts/BaseLayout.astro src/components/SiteHeader.astro src/components/SiteFooter.astro src/components/Intro.astro
 git commit -m "feat: add restrained editor-inspired visual system"
 ```
 
@@ -528,35 +506,41 @@ git commit -m "feat: add restrained editor-inspired visual system"
 - Create: `src/pages/tech/index.astro`
 - Create: `src/pages/memory/index.astro`
 - Create: `src/pages/research/index.astro`
-- Create: `tests/routes.test.ts`
+- Create: `tests/build-output.test.ts`
 
 **Interfaces:**
 - Consumes: `buildTimeline()`, `filterPostsByKind()`, and Astro collections.
 - Produces: `/`, `/tech/`, `/memory/`, and `/research/`.
 
-- [ ] **Step 1: Write failing route-source tests**
+- [ ] **Step 1: Write failing generated-output tests**
 
 ```ts
 import { expect, it } from "vitest";
 import fs from "node:fs";
 
-for (const route of ["index.astro", "tech/index.astro", "memory/index.astro", "research/index.astro"]) {
-  it(`defines src/pages/${route}`, () => {
-    expect(fs.existsSync(`src/pages/${route}`)).toBe(true);
+const readOutput = (route: string) => fs.readFileSync(`dist/${route}`, "utf8");
+
+for (const route of ["index.html", "tech/index.html", "memory/index.html", "research/index.html"]) {
+  it(`builds dist/${route}`, () => {
+    expect(fs.existsSync(`dist/${route}`)).toBe(true);
   });
 }
 
-it("uses one timeline with semantic node kinds", () => {
-  const source = fs.readFileSync("src/components/TimelineFeed.astro", "utf8");
-  expect(source).toContain('data-kind={entry.kind}');
+it("renders one semantic timeline containing all three content kinds", () => {
+  const home = readOutput("index.html");
+  expect(home).toContain('aria-label="最近内容"');
+  expect(home).toContain('data-kind="TECH"');
+  expect(home).toContain('data-kind="MEMORY"');
+  expect(home).toContain('data-kind="RESEARCH"');
+  expect(home).not.toContain("Singapore");
 });
 ```
 
 - [ ] **Step 2: Run tests and confirm missing-route failures**
 
-Run `npm test -- tests/routes.test.ts`.
+Run `npm run build && npm test -- tests/build-output.test.ts`.
 
-Expected: FAIL for the missing pages/components.
+Expected: the build may succeed without these routes, but the test FAILS because the generated pages and rendered timeline do not exist.
 
 - [ ] **Step 3: Implement pages and timeline components**
 
@@ -602,14 +586,14 @@ const entries = buildTimeline(posts, research, moments);
 
 - [ ] **Step 4: Verify routes and build**
 
-Run `npm test -- tests/routes.test.ts tests/content.test.ts && npm run build`.
+Run `npm run build && npm test -- tests/build-output.test.ts tests/content.test.ts`.
 
 Expected: tests PASS; build emits `/index.html`, `/tech/index.html`, `/memory/index.html`, and `/research/index.html`.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/components/PostMeta.astro src/components/PostList.astro src/components/TimelineFeed.astro src/components/ResearchList.astro src/pages/index.astro src/pages/tech src/pages/memory src/pages/research tests/routes.test.ts
+git add src/components/PostMeta.astro src/components/PostList.astro src/components/TimelineFeed.astro src/components/ResearchList.astro src/pages/index.astro src/pages/tech src/pages/memory src/pages/research tests/build-output.test.ts
 git commit -m "feat: add unified timeline and content channels"
 ```
 
@@ -621,35 +605,36 @@ git commit -m "feat: add unified timeline and content channels"
 - Create: `src/pages/memory/[...slug].astro`
 - Create: `src/pages/posts/[year]/[month]/[...slug].astro`
 - Create: `src/pages/publication/[...slug].astro`
-- Extend: `tests/routes.test.ts`
+- Extend: `tests/build-output.test.ts`
 
 **Interfaces:**
 - Consumes: post `kind`, slug, headings, and `legacyPath`.
 - Produces: canonical post pages and all 14 legacy content redirects.
 
-- [ ] **Step 1: Extend failing tests for article and redirect generators**
+- [ ] **Step 1: Extend failing build-output tests for articles and redirects**
 
-Add these assertions to `tests/routes.test.ts`:
+Add these assertions to `tests/build-output.test.ts`:
 
 ```ts
-const read = (file: string) => fs.readFileSync(file, "utf8");
+import path from "node:path";
+import matter from "gray-matter";
 
-it("creates canonical technology and memory article routes", () => {
-  expect(read("src/pages/tech/[...slug].astro")).toMatch(/getStaticPaths/);
-  expect(read("src/pages/tech/[...slug].astro")).toContain('"tech"');
-  expect(read("src/pages/memory/[...slug].astro")).toMatch(/getStaticPaths/);
-  expect(read("src/pages/memory/[...slug].astro")).toContain('"memory"');
-});
-
-it("derives compatibility routes from content legacyPath fields", () => {
-  expect(read("src/pages/posts/[year]/[month]/[...slug].astro")).toContain("legacyPath");
-  expect(read("src/pages/publication/[...slug].astro")).toContain("legacyPath");
+it("builds every canonical article and its behaviorally correct legacy redirect", () => {
+  for (const name of fs.readdirSync("src/content/posts").filter((file) => file.endsWith(".md"))) {
+    const { data } = matter.read(path.join("src/content/posts", name));
+    const slug = name.replace(/\.md$/, "");
+    const canonical = `/${data.kind}/${slug}/`;
+    expect(fs.existsSync(`dist${canonical}index.html`)).toBe(true);
+    const legacy = fs.readFileSync(`dist${data.legacyPath}index.html`, "utf8");
+    expect(legacy).toContain('content="noindex"');
+    expect(legacy).toContain(`href="${canonical}"`);
+  }
 });
 ```
 
 - [ ] **Step 2: Run focused tests and confirm failure**
 
-Run `npm test -- tests/routes.test.ts`.
+Run `npm run build && npm test -- tests/build-output.test.ts`.
 
 Expected: FAIL because article and compatibility route files are absent.
 
@@ -697,14 +682,14 @@ const { destination } = Astro.props;
 
 - [ ] **Step 4: Verify every legacy output path**
 
-Run `npm test -- tests/routes.test.ts && npm run build`, then run a Node assertion that reads each content file's `legacyPath` and verifies `dist/<legacyPath>/index.html` exists.
+Run `npm run build && npm test -- tests/build-output.test.ts`.
 
 Expected: all 12 old post paths and 2 old publication paths exist in `dist/`.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/layouts/PostLayout.astro src/pages/tech src/pages/memory src/pages/posts src/pages/publication tests/routes.test.ts
+git add src/layouts/PostLayout.astro src/pages/tech src/pages/memory src/pages/posts src/pages/publication tests/build-output.test.ts
 git commit -m "feat: add article pages and legacy redirects"
 ```
 
@@ -724,7 +709,7 @@ git commit -m "feat: add article pages and legacy redirects"
 - Create: `src/pages/cn/index.astro`
 - Create: `src/pages/publications/index.astro`
 - Create: `src/pages/year-archive/index.astro`
-- Extend: `tests/routes.test.ts`
+- Extend: `tests/build-output.test.ts`
 
 **Interfaces:**
 - Consumes: migrated About copy, `getTagCounts()`, published posts, and `siteConfig`.
@@ -732,34 +717,48 @@ git commit -m "feat: add article pages and legacy redirects"
 
 - [ ] **Step 1: Add failing assertions for support routes**
 
-Add these assertions to `tests/routes.test.ts`:
+Add behavior-level assertions to `tests/build-output.test.ts`. The test reads the real production output after `npm run build && npm run postbuild`; it does not inspect Astro source text.
 
 ```ts
-it("provides bilingual biographies with reciprocal links", () => {
-  const zh = read("src/pages/about/index.astro");
-  const en = read("src/pages/en/about/index.astro");
-  expect(zh).toContain('/en/about/');
-  expect(en).toContain('/about/');
+import fs from "node:fs";
+import path from "node:path";
+
+const output = (route: string) => fs.readFileSync(path.join("dist", route), "utf8");
+
+it("renders bilingual biographies with reciprocal links", () => {
+  expect(output("about/index.html")).toContain('href="/en/about/"');
+  expect(output("en/about/index.html")).toContain('href="/about/"');
 });
 
-it("exposes search fallback, RSS, robots, OG, and 404 sources", () => {
-  expect(read("src/components/Search.astro")).toContain("搜索索引将在生产构建后生成。");
-  expect(read("src/pages/rss.xml.ts")).toContain("getPublishedPosts");
-  expect(fs.existsSync("src/pages/robots.txt.ts")).toBe(true);
-  expect(fs.existsSync("src/pages/og/[...slug].png.ts")).toBe(true);
-  expect(fs.existsSync("src/pages/404.astro")).toBe(true);
+it("emits search, RSS, robots, sitemap, and 404 artifacts", () => {
+  expect(fs.existsSync("dist/search/index.html")).toBe(true);
+  expect(fs.existsSync("dist/pagefind/pagefind.js")).toBe(true);
+  const rss = output("rss.xml");
+  expect(rss).toContain("<rss");
+  expect(rss.match(/<item>/g)).toHaveLength(12);
+  expect(output("robots.txt")).toContain("https://zhaoyiheng2886.github.io/sitemap-index.xml");
+  expect(fs.existsSync("dist/sitemap-index.xml")).toBe(true);
+  expect(fs.existsSync("dist/404.html")).toBe(true);
 });
 
-it("maps compatibility pages to exact replacements", () => {
-  expect(read("src/pages/cn/index.astro")).toContain('/about/');
-  expect(read("src/pages/publications/index.astro")).toContain('/research/');
-  expect(read("src/pages/year-archive/index.astro")).toContain('destination: "/"');
+it("maps compatibility pages to exact rendered replacements", () => {
+  expect(output("cn/index.html")).toContain('href="/about/"');
+  expect(output("publications/index.html")).toContain('href="/research/"');
+  expect(output("year-archive/index.html")).toContain('href="/"');
+});
+
+it("emits real PNG social cards", () => {
+  const cards = fs.readdirSync("dist/og", { recursive: true })
+    .filter((file) => String(file).endsWith(".png"));
+  expect(cards.length).toBeGreaterThan(0);
+  const signature = fs.readFileSync(path.join("dist/og", String(cards[0]))).subarray(0, 8);
+  expect([...signature]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
 });
 ```
 
 - [ ] **Step 2: Run tests and confirm failure**
 
-Run `npm test -- tests/routes.test.ts`.
+Run `npm run build && npm run postbuild && npm test -- tests/build-output.test.ts`.
 
 Expected: FAIL because support routes are missing.
 
@@ -811,7 +810,7 @@ Expected: build succeeds; `dist/pagefind/`, `dist/rss.xml`, `dist/robots.txt`, g
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/components/Search.astro src/pages/about src/pages/en src/pages/tags src/pages/search src/pages/rss.xml.ts src/pages/robots.txt.ts src/pages/og src/pages/404.astro src/pages/cn src/pages/publications src/pages/year-archive tests/routes.test.ts
+git add src/components/Search.astro src/pages/about src/pages/en src/pages/tags src/pages/search src/pages/rss.xml.ts src/pages/robots.txt.ts src/pages/og src/pages/404.astro src/pages/cn src/pages/publications src/pages/year-archive tests/build-output.test.ts
 git commit -m "feat: add discovery, biography, and support pages"
 ```
 
@@ -928,17 +927,26 @@ Extend `tests/scaffold.test.ts` with:
 
 ```ts
 import fs from "node:fs";
+import YAML from "yaml";
 
 it("defines the official GitHub Pages artifact flow", () => {
-  const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
-  for (const expected of [
-    "actions/configure-pages",
-    "actions/upload-pages-artifact",
-    "actions/deploy-pages",
-    "actions/setup-node",
+  const workflow = YAML.parse(fs.readFileSync(".github/workflows/deploy.yml", "utf8"));
+  expect(workflow.permissions).toMatchObject({ pages: "write", "id-token": "write" });
+  expect(workflow.concurrency.group).toBe("pages");
+  const buildSteps = workflow.jobs.build.steps.map((step: { uses?: string; run?: string }) => step.uses ?? step.run);
+  expect(buildSteps).toEqual(expect.arrayContaining([
+    expect.stringContaining("actions/configure-pages@"),
+    expect.stringContaining("actions/upload-pages-artifact@"),
+    expect.stringContaining("actions/setup-node@"),
     "npm ci",
+    "npm test",
+    "npm run check",
     "npm run build",
-  ]) expect(workflow).toContain(expected);
+    "npm run postbuild",
+  ]));
+  expect(workflow.jobs.deploy.steps).toEqual(expect.arrayContaining([
+    expect.objectContaining({ uses: expect.stringContaining("actions/deploy-pages@") }),
+  ]));
 });
 
 it("removes Jekyll-only entry points after migration", () => {
