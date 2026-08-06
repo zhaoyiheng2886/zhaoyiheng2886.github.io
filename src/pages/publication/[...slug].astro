@@ -1,0 +1,9 @@
+---
+import { getCollection } from "astro:content";
+export async function getStaticPaths() {
+  const entries = await getCollection("research", ({ data }) => Boolean(data.legacyPath));
+  return entries.map((entry) => ({ params: { slug: entry.data.legacyPath!.replace(/^\/publication\//, "").replace(/\/$/, "") }, props: { destination: `/research/#${entry.id}` } }));
+}
+const { destination } = Astro.props;
+---
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8" /><meta name="robots" content="noindex" /><link rel="canonical" href={destination} /><meta http-equiv="refresh" content={`0;url=${destination}`} /><title>研究页面已迁移</title></head><body><a href={destination}>研究页面已迁移，点击继续查看。</a></body></html>

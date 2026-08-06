@@ -1,0 +1,13 @@
+---
+import { getCollection } from "astro:content";
+import PostList from "../../components/PostList.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { filterPostsByKind, getPublishedPosts } from "../../lib/content";
+const posts = filterPostsByKind(getPublishedPosts(await getCollection("posts")), "tech")
+  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime());
+---
+<BaseLayout title="技术文章" description="关于生成模型、语言模型与智能系统的技术笔记。">
+  <h1 class="page-title">技术文章</h1>
+  <p class="page-intro utility">TECH NOTES / {posts.length} POSTS</p>
+  <PostList posts={posts} />
+</BaseLayout>

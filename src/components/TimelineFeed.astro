@@ -1,0 +1,15 @@
+---
+import type { TimelineEntry } from "../lib/content";
+interface Props { entries: TimelineEntry[] }
+const { entries } = Astro.props;
+---
+<ol class="timeline" aria-label="最近内容">
+  {entries.map((entry) => <li class="timeline-entry" data-kind={entry.kind}>
+    <span class="timeline-marker" aria-hidden="true"></span>
+    <div>
+      <p class="timeline-meta utility"><span>{entry.kind}</span><time datetime={entry.date.toISOString()}>{entry.date.toLocaleDateString("zh-CN")}</time></p>
+      <h2><a href={entry.href}>{entry.title}</a></h2>
+      <p>{entry.description}</p>
+    </div>
+  </li>)}
+</ol>

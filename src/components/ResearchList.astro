@@ -1,0 +1,14 @@
+---
+interface Props { entries: Array<{ id: string; data: { title: string; description: string; date: Date; authors: string[]; venue: string; status: string; url?: string; pdf?: string } }> }
+const { entries } = Astro.props;
+---
+<div>
+  {entries.map((entry) => <article class="research-item" id={entry.id}>
+    <p class="post-meta utility"><time datetime={entry.data.date.toISOString()}>{entry.data.date.getFullYear()}</time><span>{entry.data.status}</span></p>
+    <h2>{entry.data.url ? <a href={entry.data.url}>{entry.data.title}</a> : entry.data.title}</h2>
+    <p>{entry.data.authors.join(", ")}</p>
+    <p>{entry.data.venue}</p>
+    <p>{entry.data.description}</p>
+    {entry.data.pdf && <p><a href={entry.data.pdf}>PDF</a></p>}
+  </article>)}
+</div>

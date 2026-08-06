@@ -11,6 +11,7 @@ Gemfile.lock
 # Ignore files created by npm
 node_modules
 .astro/
+dist/
 
 # Ignore the vendor file at root level and bundle for alternative installation
 /vendor/

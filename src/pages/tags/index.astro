@@ -1,0 +1,10 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublishedPosts, getTagCounts } from "../../lib/content";
+const tags = [...getTagCounts(getPublishedPosts(await getCollection("posts")))].sort(([a], [b]) => a.localeCompare(b));
+---
+<BaseLayout title="标签" description="按主题浏览文章。">
+  <h1 class="page-title">标签</h1>
+  <ul class="tag-list">{tags.map(([tag, count]) => <li><a href={`/tags/${encodeURIComponent(tag)}/`}>#{tag} ({count})</a></li>)}</ul>
+</BaseLayout>

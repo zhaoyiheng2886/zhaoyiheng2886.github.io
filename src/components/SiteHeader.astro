@@ -1,0 +1,14 @@
+---
+import { siteConfig } from "../site.config";
+const path = Astro.url.pathname;
+---
+<header class="site-header">
+  <div class="shell site-header__inner">
+    <a class="site-mark utility" href="/">ZYH<span aria-hidden="true">_</span></a>
+    <nav class="site-nav utility" aria-label="主导航">
+      {siteConfig.navigation.map((item) => (
+        <a href={item.href} aria-current={path === item.href ? "page" : undefined}>{item.label}</a>
+      ))}
+    </nav>
+  </div>
+</header>

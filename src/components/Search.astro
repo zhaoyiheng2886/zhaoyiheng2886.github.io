@@ -1,0 +1,39 @@
+<form class="search-form" role="search" id="site-search">
+  <label for="search-query">搜索文章</label>
+  <input id="search-query" type="search" autocomplete="off" placeholder="输入关键词…" />
+  <p id="search-status" class="utility">搜索索引将在生产构建后生成。</p>
+  <div id="search-results" aria-live="polite"></div>
+</form>
+<script>
+  const form = document.querySelector<HTMLFormElement>("#site-search");
+  const input = document.querySelector<HTMLInputElement>("#search-query");
+  const status = document.querySelector<HTMLElement>("#search-status");
+  const results = document.querySelector<HTMLElement>("#search-results");
+  let pagefind: { search: (query: string) => Promise<{ results: Array<{ data: () => Promise<{ url: string; meta: { title?: string }; excerpt: string }> }> }> } | undefined;
+  try {
+    const path = "/pagefind/pagefind.js";
+    pagefind = await import(/* @vite-ignore */ path);
+    if (status) status.textContent = "输入关键词开始搜索。";
+  } catch { /* development fallback stays visible */ }
+  form?.addEventListener("submit", (event) => event.preventDefault());
+  input?.addEventListener("input", async () => {
+    if (!pagefind || !results || !status) return;
+    const query = input.value.trim();
+    results.replaceChildren();
+    if (!query) { status.textContent = "输入关键词开始搜索。"; return; }
+    const found = await pagefind.search(query);
+    const items = await Promise.all(found.results.slice(0, 12).map((result) => result.data()));
+    status.textContent = `找到 ${items.length} 条结果`;
+    for (const item of items) {
+      const article = document.createElement("article");
+      article.className = "search-result";
+      const link = document.createElement("a");
+      link.href = item.url;
+      link.textContent = item.meta.title ?? item.url;
+      const excerpt = document.createElement("p");
+      excerpt.innerHTML = item.excerpt;
+      article.append(link, excerpt);
+      results.append(article);
+    }
+  });
+</script>

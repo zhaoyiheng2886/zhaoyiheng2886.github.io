@@ -1,0 +1,32 @@
+<form class="editor-form" id="blog-editor">
+  <label>标题<input name="title" required /></label>
+  <label>摘要<input name="description" required /></label>
+  <label>日期<input name="publishDate" type="date" required /></label>
+  <label>频道<select name="kind"><option value="tech">TECH</option><option value="memory">MEMORY</option></select></label>
+  <label>标签（逗号分隔）<input name="tags" /></label>
+  <div class="editor-grid">
+    <label>Markdown<textarea name="body" required></textarea></label>
+    <section class="editor-preview prose" aria-label="预览"><p class="utility">PREVIEW</p><div id="editor-preview"></div></section>
+  </div>
+  <button type="submit">下载 Markdown</button>
+  <p id="editor-error" role="alert"></p>
+</form>
+<script>
+  import DOMPurify from "dompurify";
+  import { marked } from "marked";
+  import { createPostDocument, downloadPost, postFilename } from "../lib/editor";
+  const form = document.querySelector<HTMLFormElement>("#blog-editor");
+  const body = form?.elements.namedItem("body") as HTMLTextAreaElement | null;
+  const preview = document.querySelector<HTMLElement>("#editor-preview");
+  const error = document.querySelector<HTMLElement>("#editor-error");
+  body?.addEventListener("input", async () => { if (preview) preview.innerHTML = DOMPurify.sanitize(await marked.parse(body.value)); });
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    try {
+      const input = { title: String(data.get("title")), description: String(data.get("description")), publishDate: String(data.get("publishDate")), kind: String(data.get("kind")) as "tech" | "memory", tags: String(data.get("tags")).split(","), body: String(data.get("body")) };
+      downloadPost(postFilename(input.title, input.publishDate), createPostDocument(input));
+      if (error) error.textContent = "";
+    } catch (reason) { if (error) error.textContent = reason instanceof Error ? reason.message : "无法生成文件。"; }
+  });
+</script>

@@ -1,0 +1,11 @@
+---
+import { getCollection } from "astro:content";
+import ResearchList from "../../components/ResearchList.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+const entries = (await getCollection("research")).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+<BaseLayout title="研究" description="赵以恒的研究工作与论文。">
+  <h1 class="page-title">研究</h1>
+  <p class="page-intro utility">RESEARCH / PUBLICATIONS</p>
+  <ResearchList entries={entries} />
+</BaseLayout>

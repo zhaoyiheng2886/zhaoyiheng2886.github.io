@@ -1,0 +1,9 @@
+---
+import { siteConfig } from "../site.config";
+---
+<footer class="site-footer">
+  <div class="shell site-footer__inner utility">
+    <span>© {new Date().getFullYear()} {siteConfig.author}</span>
+    <span><a href="/rss.xml">RSS</a> · <a href={siteConfig.github}>GitHub</a></span>
+  </div>
+</footer>

@@ -1,0 +1,10 @@
+---
+interface Props { date: Date; kind?: string; tags?: readonly string[]; readingMinutes?: number }
+const { date, kind, tags = [], readingMinutes } = Astro.props;
+---
+<p class="post-meta utility">
+  {kind && <span>{kind.toUpperCase()}</span>}
+  <time datetime={date.toISOString()}>{date.toLocaleDateString("zh-CN")}</time>
+  {readingMinutes && <span>{readingMinutes} MIN READ</span>}
+  {tags.map((tag) => <a href={`/tags/${encodeURIComponent(tag.toLowerCase())}/`}>#{tag}</a>)}
+</p>

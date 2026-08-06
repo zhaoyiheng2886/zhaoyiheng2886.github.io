@@ -1,0 +1,24 @@
+---
+import type { MarkdownHeading } from "astro";
+import BaseLayout from "./BaseLayout.astro";
+import PostMeta from "../components/PostMeta.astro";
+interface PostLike { id: string; body?: string; data: { title: string; description: string; publishDate: Date; kind: "tech" | "memory"; tags: string[] } }
+interface Props { post: PostLike; headings: MarkdownHeading[] }
+const { post, headings } = Astro.props;
+const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const readingMinutes = Math.max(1, Math.ceil((post.body?.replace(/\s+/g, "").length ?? 0) / 500));
+---
+<BaseLayout title={post.data.title} description={post.data.description} image={`/og/${post.id}.png`}>
+  <article>
+    <header class="article-header">
+      <PostMeta date={post.data.publishDate} kind={post.data.kind} tags={post.data.tags} readingMinutes={readingMinutes} />
+      <h1 class="page-title">{post.data.title}</h1>
+      <p class="page-intro">{post.data.description}</p>
+    </header>
+    {toc.length >= 3 && <nav class="toc" aria-label="文章目录">
+      <p class="utility">CONTENTS</p>
+      <ol>{toc.map((heading) => <li><a href={`#${heading.slug}`}>{heading.text}</a></li>)}</ol>
+    </nav>}
+    <div class="prose" data-pagefind-body><slot /></div>
+  </article>
+</BaseLayout>

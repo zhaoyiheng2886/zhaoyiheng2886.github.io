@@ -1,0 +1,13 @@
+---
+import { getCollection } from "astro:content";
+import PostList from "../../components/PostList.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { filterPostsByKind, getPublishedPosts } from "../../lib/content";
+const posts = filterPostsByKind(getPublishedPosts(await getCollection("posts")), "memory")
+  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime());
+---
+<BaseLayout title="人生记忆" description="那些值得被留下来的生活片段。">
+  <h1 class="page-title">人生记忆</h1>
+  <p class="page-intro utility">MEMORY LOG / {posts.length} ENTRIES</p>
+  <PostList posts={posts} />
+</BaseLayout>

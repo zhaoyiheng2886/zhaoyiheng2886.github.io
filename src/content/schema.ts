@@ -20,7 +20,7 @@ export const researchSchema = z.object({
   authors: z.array(z.string().trim().min(1)),
   venue: z.string().trim().min(1),
   status: z.string().trim().min(1),
-  url: z.string().url().optional(),
+  url: z.url().optional(),
   pdf: z.string().optional(),
   legacyPath: z.string().startsWith("/publication/").optional(),
 });

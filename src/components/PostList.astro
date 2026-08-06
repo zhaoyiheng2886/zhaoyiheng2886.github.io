@@ -1,0 +1,12 @@
+---
+import PostMeta from "./PostMeta.astro";
+interface Props { posts: Array<{ id: string; data: { title: string; description: string; publishDate: Date; kind: "tech" | "memory"; tags: string[] } }> }
+const { posts } = Astro.props;
+---
+<ol class="post-list">
+  {posts.map((post) => <li>
+    <PostMeta date={post.data.publishDate} kind={post.data.kind} tags={post.data.tags} />
+    <h2><a href={`/${post.data.kind}/${post.id}/`}>{post.data.title}</a></h2>
+    <p>{post.data.description}</p>
+  </li>)}
+</ol>

@@ -1,0 +1,12 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostList from "../../components/PostList.astro";
+import { getPublishedPosts, getTagCounts } from "../../lib/content";
+export async function getStaticPaths() {
+  const posts = getPublishedPosts(await getCollection("posts"));
+  return [...getTagCounts(posts).keys()].map((tag) => ({ params: { tag }, props: { tag, posts: posts.filter((post) => post.data.tags.some((item) => item.trim().toLowerCase() === tag)) } }));
+}
+const { tag, posts } = Astro.props;
+---
+<BaseLayout title={`#${tag}`} description={`标签 ${tag} 下的文章。`}><h1 class="page-title">#{tag}</h1><PostList posts={posts} /></BaseLayout>

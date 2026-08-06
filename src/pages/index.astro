@@ -1,0 +1,15 @@
+---
+import { getCollection } from "astro:content";
+import Intro from "../components/Intro.astro";
+import TimelineFeed from "../components/TimelineFeed.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { buildTimeline, getPublishedPosts } from "../lib/content";
+const posts = getPublishedPosts(await getCollection("posts"));
+const research = await getCollection("research");
+const entries = buildTimeline(posts, research, []);
+---
+<BaseLayout>
+  <Intro />
+  <h2 class="section-heading utility">Recent / 最近内容</h2>
+  <TimelineFeed entries={entries} />
+</BaseLayout>

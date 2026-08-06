@@ -1,0 +1,12 @@
+---
+import { getCollection } from "astro:content";
+export async function getStaticPaths() {
+  const posts = await getCollection("posts", ({ data }) => !data.draft && Boolean(data.legacyPath));
+  return posts.map((post) => {
+    const [year, month, ...slug] = post.data.legacyPath!.replace(/^\/posts\//, "").replace(/\/$/, "").split("/");
+    return { params: { year, month, slug: slug.join("/") }, props: { destination: `/${post.data.kind}/${post.id}/` } };
+  });
+}
+const { destination } = Astro.props;
+---
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8" /><meta name="robots" content="noindex" /><link rel="canonical" href={destination} /><meta http-equiv="refresh" content={`0;url=${destination}`} /><title>文章已迁移</title></head><body><a href={destination}>文章已迁移，点击继续阅读。</a></body></html>
