@@ -27,4 +27,8 @@ describe("deployment", () => {
     expect(build).toEqual(expect.arrayContaining([expect.stringContaining("actions/configure-pages@"), expect.stringContaining("actions/upload-pages-artifact@"), "npm ci", "npm test", "npm run check", "npm run build"]));
     expect(workflow.jobs.deploy.steps[0].uses).toContain("actions/deploy-pages@");
   });
+
+  it("disables Jekyll for branch-based Pages builds", () => {
+    expect(fs.existsSync(".nojekyll")).toBe(true);
+  });
 });
