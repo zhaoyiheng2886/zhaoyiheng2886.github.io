@@ -12,16 +12,18 @@ const markdownFiles = (directory: string) =>
   fs.readdirSync(directory).filter((name) => name.endsWith(".md")).sort();
 
 describe("Jekyll content migration", () => {
-  it("migrates exactly twelve posts and two research entries", () => {
-    expect(markdownFiles(postsDir)).toHaveLength(12);
+  it("preserves all twelve migrated posts and two research entries", () => {
+    const migratedPosts = markdownFiles(postsDir).filter((name) =>
+      Boolean(matter.read(path.join(postsDir, name)).data.legacyPath),
+    );
+    expect(migratedPosts).toHaveLength(12);
     expect(markdownFiles(researchDir)).toHaveLength(2);
   });
 
   it("preserves every old post permalink and classifies only internship diaries as memories", () => {
-    const posts = markdownFiles(postsDir).map((name) => ({
-      name,
-      data: matter.read(path.join(postsDir, name)).data,
-    }));
+    const posts = markdownFiles(postsDir)
+      .map((name) => ({ name, data: matter.read(path.join(postsDir, name)).data }))
+      .filter(({ data }) => Boolean(data.legacyPath));
 
     const legacyPaths = posts.map(({ data }) => data.legacyPath);
     expect(legacyPaths.every((value) => /^\/posts\/2026\/(03|04)\/.+\/$/.test(value))).toBe(true);

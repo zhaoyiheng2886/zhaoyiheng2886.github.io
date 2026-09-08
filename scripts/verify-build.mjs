@@ -9,12 +9,11 @@ const assertFile = (relative) => {
 const htmlAt = (route) => `${route.replace(/^\//, "").replace(/\/?$/, "/")}index.html`;
 
 const postFiles = fs.readdirSync("src/content/posts").filter((name) => name.endsWith(".md"));
-if (postFiles.length !== 12) throw new Error(`Expected 12 posts, found ${postFiles.length}`);
 for (const name of postFiles) {
   const { data, content } = matter.read(path.join("src/content/posts", name));
   const slug = name.replace(/\.md$/, "");
   assertFile(htmlAt(`/${data.kind}/${slug}/`));
-  assertFile(htmlAt(data.legacyPath));
+  if (data.legacyPath) assertFile(htmlAt(data.legacyPath));
   for (const match of content.matchAll(/!\[[^\]]*\]\((\/images\/posts\/[^)]+)\)/g)) assertFile(match[1]);
   assertFile(`og/${slug}.png`);
 }
@@ -28,4 +27,4 @@ for (const name of researchFiles) {
 
 for (const artifact of ["index.html", "tech/index.html", "memory/index.html", "research/index.html", "about/index.html", "en/about/index.html", "search/index.html", "editor/index.html", "rss.xml", "robots.txt", "404.html", "pagefind/pagefind.js"]) assertFile(artifact);
 
-console.log("Verified build artifacts: 12 posts, 2 research entries, compatibility routes, assets, and support pages.");
+console.log(`Verified build artifacts: ${postFiles.length} posts, 2 research entries, compatibility routes, assets, and support pages.`);
